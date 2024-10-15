@@ -117,7 +117,7 @@ describe('CLI', () => {
       }
       const formattedEntry = formatLogEntry(loggerConfig, logEntry)
       expect(formattedEntry).toBe(
-        '2024-10-15T11:30:43.803Z [EVENT_WITH_FORMAT] Some detail happened -- extraArg=extraValue',
+        '2024-10-15T11:30:43.803Z [EVENT_WITH_FORMAT] Some detail happened -- extraArg="extraValue"',
       )
     })
   })

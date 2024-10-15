@@ -56,7 +56,7 @@ const formatLogEntry = (loggerConfig, logEntry) => {
 
   const args = Object.entries(rest)
     .filter(([key, _value]) => !argsUsedInMessage.includes(key))
-    .map(([key, value]) => `${key}=${value}`)
+    .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
     .join(' ')
 
   return `${timestamp} [${event}] ${message}${args ? ` -- ${args}` : ''}`

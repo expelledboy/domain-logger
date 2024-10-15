@@ -41,8 +41,8 @@ const { Logger } = require('domain-logger')
 const log = Logger.create('path/to/logger.config.json')
 
 const main = async () => {
-  log.addContext({ requestId: '123' })
   log('SIMPLE_EVENT')
+  log.addContext({ requestId: '123' })
   log('EVENT_WITH_FORMAT', { detail: 'important thing' })
   log('EVENT_WITH_IMPORTANT_METADATA', { important_field: 'important value' })
 }
@@ -59,8 +59,9 @@ node ./main.js
 You should see the logs in the console.
 
 ```
-{"timestamp":"2024-05-02T12:00:00.000Z","event":"SIMPLE_EVENT","message":"Something happened","request_id":"123"}
+{"timestamp":"2024-05-02T12:00:00.000Z","event":"SIMPLE_EVENT","message":"Something happened"}
 {"timestamp":"2024-05-02T12:00:00.000Z","event":"EVENT_WITH_FORMAT","message":"Some important thing happened","request_id":"123"}
+{"timestamp":"2024-05-02T12:00:00.000Z","event":"EVENT_WITH_IMPORTANT_METADATA","message":"Important info","important_field":"important value","request_id":"123"}
 ```
 
 5. Format for human consumption
@@ -74,6 +75,7 @@ node ./main.js | npm exec domain-logger -- --format=plain --logger-config=./logg
 You should see the logs in the console.
 
 ```
-2024-05-02T12:00:00.000Z [SIMPLE_EVENT] Something happened -- request_id=123
+2024-05-02T12:00:00.000Z [SIMPLE_EVENT] Something happened
 2024-05-02T12:00:00.000Z [EVENT_WITH_FORMAT] Some important thing happened -- request_id=123
+2024-05-02T12:00:00.000Z [EVENT_WITH_IMPORTANT_METADATA] Important info -- important_field="important value" request_id=123
 ```
