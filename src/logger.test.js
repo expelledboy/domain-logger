@@ -50,13 +50,13 @@ describe('Logger', function () {
 
   it('should add context correctly', function () {
     logger.addContext({ userId: 123 })
-    logger.log('SIMPLE_EVENT')
+    logger.log('SIMPLE_EVENT', { trace_id: '123' })
     expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('"user_id":123'))
   })
 
   it('should log messages with correct format', function () {
     logger.addContext({ detail: 'important thing' })
-    logger.log('EVENT_WITH_FORMAT')
+    logger.log('EVENT_WITH_FORMAT', { trace_id: '123' })
     expect(consoleInfoSpy).toHaveBeenCalledWith(
       expect.stringContaining('"message":"Some important thing happened"'),
     )
@@ -65,7 +65,7 @@ describe('Logger', function () {
   it('should warn if timestamp is in the future', function () {
     var futureDate = new Date(Date.now() + 10000).toISOString()
 
-    logger.log('SIMPLE_EVENT', { timestamp: futureDate })
+    logger.log('SIMPLE_EVENT', { timestamp: futureDate, trace_id: '123' })
 
     expect(consoleWarnSpy).toHaveBeenCalledWith('Log entry has a timestamp in the future')
 
@@ -78,7 +78,7 @@ describe('Logger', function () {
   it('should warn if timestamp format is incorrect', function () {
     var invalidTimestamp = '2024-10-15 11:30:43'
 
-    logger.log('SIMPLE_EVENT', { timestamp: invalidTimestamp })
+    logger.log('SIMPLE_EVENT', { timestamp: invalidTimestamp, trace_id: '123' })
     expect(consoleWarnSpy).toHaveBeenCalledWith('Log entry has a timestamp in the wrong format')
 
     // but still log the message
@@ -91,7 +91,7 @@ describe('Logger', function () {
     const log = Logger.create(configPath, console)
 
     log.addContext({ requestId: '123' })
-    log('SIMPLE_EVENT')
+    log('SIMPLE_EVENT', { trace_id: '123' })
 
     expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('"request_id":"123"'))
   })

@@ -48,7 +48,7 @@ const stripColors = (text) => {
 }
 
 const formatLogEntry = (loggerConfig, logEntry) => {
-  const { timestamp, event, message, ...rest } = logEntry
+  const { timestamp, event, message, trace_id, ...rest } = logEntry
 
   const argsUsedInMessage = (loggerConfig[event].format.match(/\{(\w+)\}/g) || []).map((arg) =>
     arg.replace(/[{}]/g, ''),
@@ -59,7 +59,10 @@ const formatLogEntry = (loggerConfig, logEntry) => {
     .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
     .join(' ')
 
-  return `${timestamp} [${event}] ${message}${args ? ` -- ${args}` : ''}`
+  // Conditionally include trace_id in the log format
+  const traceIdPart = trace_id ? `(${trace_id}) ` : ''
+
+  return `${timestamp} ${traceIdPart}[${event}] ${message}${args ? ` -- ${args}` : ''}`
 }
 
 const main = async () => {

@@ -99,9 +99,12 @@ describe('CLI', () => {
         timestamp: '2024-10-15T11:30:43.803Z',
         event: 'SIMPLE_EVENT',
         message: 'Something happened',
+        trace_id: '123',
       }
       const formattedEntry = formatLogEntry(loggerConfig, logEntry)
-      expect(formattedEntry).toBe('2024-10-15T11:30:43.803Z [SIMPLE_EVENT] Something happened')
+      expect(formattedEntry).toBe(
+        '2024-10-15T11:30:43.803Z (123) [SIMPLE_EVENT] Something happened',
+      )
     })
 
     it('should format log entry correctly with additional arguments', function () {
@@ -113,11 +116,40 @@ describe('CLI', () => {
         event: 'EVENT_WITH_FORMAT',
         message: 'Some detail happened',
         detail: 'detail',
+        trace_id: '123',
         extraArg: 'extraValue',
       }
       const formattedEntry = formatLogEntry(loggerConfig, logEntry)
       expect(formattedEntry).toBe(
-        '2024-10-15T11:30:43.803Z [EVENT_WITH_FORMAT] Some detail happened -- extraArg="extraValue"',
+        '2024-10-15T11:30:43.803Z (123) [EVENT_WITH_FORMAT] Some detail happened -- extraArg="extraValue"',
+      )
+    })
+
+    it('should format log entries with or without trace_id present', function () {
+      const loggerConfig = {
+        EVENT_WITH_FORMAT: { format: 'Some {detail} happened' },
+      }
+      const logEntryWithoutTraceId = {
+        timestamp: '2024-10-15T11:30:43.803Z',
+        event: 'EVENT_WITH_FORMAT',
+        message: 'Some detail happened',
+        detail: 'detail',
+      }
+      const formattedEntryWithoutTraceId = formatLogEntry(loggerConfig, logEntryWithoutTraceId)
+      expect(formattedEntryWithoutTraceId).toBe(
+        '2024-10-15T11:30:43.803Z [EVENT_WITH_FORMAT] Some detail happened',
+      )
+
+      const logEntryWithTraceId = {
+        timestamp: '2024-10-15T11:30:43.803Z',
+        event: 'EVENT_WITH_FORMAT',
+        message: 'Some detail happened',
+        detail: 'detail',
+        trace_id: '123',
+      }
+      const formattedEntryWithTraceId = formatLogEntry(loggerConfig, logEntryWithTraceId)
+      expect(formattedEntryWithTraceId).toBe(
+        '2024-10-15T11:30:43.803Z (123) [EVENT_WITH_FORMAT] Some detail happened',
       )
     })
   })

@@ -30,9 +30,7 @@ class Logger {
   }
 
   log(event, data = {}) {
-    const eventConfig = this.config[event]
-
-    Object.assign(eventConfig, { event })
+    const eventConfig = this.loadEventConfig(event)
 
     const utcTime = new Date().toISOString()
 
@@ -45,6 +43,7 @@ class Logger {
 
     if (eventConfig) {
       logEntry.message = this.formatMessage(eventConfig, metadata)
+
       logEntry.logLevel = eventConfig.log_level
 
       this.validateRequiredFields(eventConfig, metadata)
@@ -62,6 +61,16 @@ class Logger {
     this.validateTimestamp(log)
 
     this.logger[logEntry.logLevel](JSON.stringify(log, null, 0))
+  }
+
+  loadEventConfig(event) {
+    const eventConfig = this.config[event]
+
+    return {
+      ...eventConfig,
+      event,
+      required_fields: [...(eventConfig.required_fields || []), 'trace_id'],
+    }
   }
 
   formatMessage(eventConfig, metadata) {
