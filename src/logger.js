@@ -1,9 +1,9 @@
 const fs = require('fs')
 
 class Logger {
-  constructor(configPath, logger = console) {
+  constructor(configPath, loggerImplementation = console) {
     this.configPath = configPath
-    this.logger = logger
+    this.logger = loggerImplementation
     this.config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
     this.metadata = {}
     this.validateConfig()
@@ -32,6 +32,8 @@ class Logger {
   log(event, data = {}) {
     const eventConfig = this.config[event]
 
+    Object.assign(eventConfig, { event })
+
     const utcTime = new Date().toISOString()
 
     const logEntry = {
@@ -44,10 +46,13 @@ class Logger {
     if (eventConfig) {
       logEntry.message = this.formatMessage(eventConfig, metadata)
       logEntry.logLevel = eventConfig.log_level
+
+      this.validateRequiredFields(eventConfig, metadata)
     } else {
-      logEntry.message = event
       logEntry.configFile = this.configPath
-      logEntry.logLevel = 'error' // Use lowercase to match loggerStub methods
+      logEntry.logLevel = 'warn' // Use lowercase to match loggerStub methods
+
+      this.logger.error(`Unknown event: ${event}`)
     }
 
     Object.assign(logEntry, metadata)
@@ -56,7 +61,7 @@ class Logger {
 
     this.validateTimestamp(log)
 
-    this.logger[logEntry.logLevel](log) // Use logEntry.logLevel
+    this.logger[logEntry.logLevel](JSON.stringify(log, null, 0))
   }
 
   formatMessage(eventConfig, metadata) {
@@ -64,7 +69,7 @@ class Logger {
       const value = metadata[key]
 
       if (value === undefined) {
-        console.error(
+        this.logger.error(
           `Failed to format message for event '${eventConfig.name}' ~ missing required parameter '${key}'`,
         )
       }
@@ -85,19 +90,29 @@ class Logger {
 
   validateTimestamp(log) {
     if (new Date(log.timestamp) > new Date()) {
-      console.warn('Log entry has a timestamp in the future')
+      this.logger.warn('Log entry has a timestamp in the future')
     }
 
     // example timestamp: 2024-10-15T11:30:43.803Z
     const timestampRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z$/
 
     if (!log.timestamp.match(timestampRegex)) {
-      console.warn('Log entry has a timestamp in the wrong format')
+      this.logger.warn('Log entry has a timestamp in the wrong format')
     }
   }
 
-  static create(configPath, console) {
-    const loggerInstance = new Logger(configPath, console)
+  validateRequiredFields(eventConfig, metadata) {
+    if (eventConfig.required_fields) {
+      eventConfig.required_fields.forEach((field) => {
+        if (!metadata[field]) {
+          this.logger.error(`Missing required field: ${field} for event: ${eventConfig.event}`)
+        }
+      })
+    }
+  }
+
+  static create(configPath, loggerImplementation = console) {
+    const loggerInstance = new Logger(configPath, loggerImplementation)
     const logFunction = (event, options) => loggerInstance.log(event, options)
     logFunction.addContext = (context) => loggerInstance.addContext(context)
     return logFunction

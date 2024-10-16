@@ -1,0 +1,19 @@
+{
+  "AN_EVENT": {
+    "log_level": "info",
+    "format": "event"
+  },
+  "AN_ERROR": {
+    "log_level": "error",
+    "format": "an error occurred"
+  },
+  "EVENT_WITH_IMPORTANT_METADATA": {
+    "log_level": "info",
+    "format": "important info",
+    "required_fields": ["important_field"]
+  },
+  "EVENT_WITH_FORMAT": {
+    "log_level": "info",
+    "format": "some {detail} happened"
+  }
+}

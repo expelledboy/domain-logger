@@ -23,8 +23,14 @@ npm install domain-logger
 
 ```json
 {
-  "SIMPLE_EVENT": { "log_level": "info", "format": "Something happened" },
-  "EVENT_WITH_FORMAT": { "log_level": "info", "format": "Some {detail} happened" },
+  "SIMPLE_EVENT": {
+    "log_level": "info",
+    "format": "Something happened"
+  },
+  "EVENT_WITH_FORMAT": {
+    "log_level": "info",
+    "format": "Some {detail} happened"
+  },
   "EVENT_WITH_IMPORTANT_METADATA": {
     "log_level": "info",
     "format": "Important info",
@@ -78,4 +84,80 @@ You should see the logs in the console.
 2024-05-02T12:00:00.000Z [SIMPLE_EVENT] Something happened
 2024-05-02T12:00:00.000Z [EVENT_WITH_FORMAT] Some important thing happened -- request_id=123
 2024-05-02T12:00:00.000Z [EVENT_WITH_IMPORTANT_METADATA] Important info -- important_field="important value" request_id=123
+```
+
+### Behaviours
+
+With the following logger config:
+
+```json
+{
+  "AN_EVENT": {
+    "log_level": "info",
+    "format": "event"
+  },
+  "AN_ERROR": {
+    "log_level": "error",
+    "format": "an error occurred"
+  },
+  "EVENT_WITH_IMPORTANT_METADATA": {
+    "log_level": "info",
+    "format": "important info",
+    "required_fields": ["important_field"]
+  },
+  "EVENT_WITH_FORMAT": {
+    "log_level": "info",
+    "format": "some {detail} happened"
+  }
+}
+```
+
+1. Will always log, but will warn for events that are not configured.
+
+```
+> log('UNCONFIGURED_EVENT')
+Unknown event: UNCONFIGURED_EVENT
+{"timestamp":"2024-10-16T07:16:56.811Z","event":"UNCONFIGURED_EVENT","config_file":"./logger.config.json","log_level":"warn"}
+```
+
+2. Will use the log level defined in the loggerconfig.
+
+```
+> log('AN_EVENT')
+{"timestamp":"2024-10-16T07:21:03.730Z","event":"AN_EVENT","message":"event","log_level":"info"}
+```
+
+```
+> log('AN_ERROR')
+{"timestamp":"2024-10-16T07:21:03.730Z","event":"AN_ERROR","message":"an error occurred","log_level":"error"}
+```
+
+3. Will log the event with the configured format.
+
+```
+> log('EVENT_WITH_FORMAT', { detail: 'important thing' })
+{"timestamp":"2024-10-16T07:21:43.684Z","event":"EVENT_WITH_FORMAT","message":"some important thing happened","log_level":"info","detail":"important thing"}
+```
+
+4. Will warn if any required metadata is missing.
+
+```
+> log('EVENT_WITH_IMPORTANT_METADATA')
+Missing required field: important_field for event: EVENT_WITH_IMPORTANT_METADATA
+{"timestamp":"2024-10-16T07:48:03.171Z","event":"EVENT_WITH_IMPORTANT_METADATA","message":"important info","log_level":"info"}
+```
+
+```
+> log('EVENT_WITH_IMPORTANT_METADATA', { important_field: 'important value' })
+{"timestamp":"2024-10-16T07:25:01.075Z","event":"EVENT_WITH_IMPORTANT_METADATA","message":"important info","log_level":"info","important_field":"important value"}
+```
+
+5. Will warn if the timestamp is in the future.
+
+```
+> const futureTimestamp = new Date(new Date().getTime() + 1000 \* 60).toISOString()
+undefined
+> log('AN_EVENT', { timestamp: futureTimestamp })
+Log entry has a timestamp in the future
+{"timestamp":"2024-10-16T07:27:11.395Z","event":"AN_EVENT","message":"event","log_level":"info"}
 ```

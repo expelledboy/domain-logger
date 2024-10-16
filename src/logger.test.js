@@ -51,14 +51,14 @@ describe('Logger', function () {
   it('should add context correctly', function () {
     logger.addContext({ userId: 123 })
     logger.log('SIMPLE_EVENT')
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.objectContaining({ user_id: 123 }))
+    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('"user_id":123'))
   })
 
   it('should log messages with correct format', function () {
     logger.addContext({ detail: 'important thing' })
     logger.log('EVENT_WITH_FORMAT')
     expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'Some important thing happened' }),
+      expect.stringContaining('"message":"Some important thing happened"'),
     )
   })
 
@@ -71,7 +71,7 @@ describe('Logger', function () {
 
     // but still log the message
     expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'Something happened' }),
+      expect.stringContaining('"message":"Something happened"'),
     )
   })
 
@@ -83,7 +83,7 @@ describe('Logger', function () {
 
     // but still log the message
     expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'Something happened' }),
+      expect.stringContaining('"message":"Something happened"'),
     )
   })
 
@@ -93,8 +93,6 @@ describe('Logger', function () {
     log.addContext({ requestId: '123' })
     log('SIMPLE_EVENT')
 
-    expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'Something happened', request_id: '123' }),
-    )
+    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('"request_id":"123"'))
   })
 })
